@@ -19,4 +19,28 @@
     crossorigin="anonymous"
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      $("#add_symbol").click(function () {
+        $(".ui.modal").modal("show");
+      });
+
+      $("#save").click(function () {
+        var textareaContent = $("#symbols").val();
+        var symbols = textareaContent.split("\n");
+
+        for (var i = 0; i < symbols.length; ++i) {
+          $.ajax({
+            url: "/stock",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ symbol: symbols[i] }),
+            dataType: "json",
+          });
+        }
+
+        $(".ui.modal").modal("hide");
+      });
+    });
+  </script>
 </html>

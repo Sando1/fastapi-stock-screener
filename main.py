@@ -32,7 +32,6 @@ def fetch_stock_data(id: int):
     db = SessionLocal()
     stock = db.query(Stock).filter(Stock.id == id).first()
     yahoo_data = yf.Ticker(stock.symbol)
-
     stock.ma200 = yahoo_data.info["twoHundredDayAverage"]
     stock.ma50 = yahoo_data.info["fiftyDayAverage"]
     stock.price = yahoo_data.info["previousClose"]
@@ -46,15 +45,46 @@ def fetch_stock_data(id: int):
 
 
 @app.get("/")
-def index(request: Request, db: Session = Depends(get_db)):
+def dashboard(
+    request: Request,
+    forward_pe=None,
+    dividend_yield=None,
+    ma50=None,
+    ma200=None,
+    db: Session = Depends(get_db),
+):
     """
-    Displays the stock screener dashboard
+    show all stocks in the database and button to add more
+    button next to each stock to delete from database
+    filters to filter this list of stocks
+    button next to each to add a note or save for later
     """
-    stocks = db.query(Stock).all()
+
+    stocks = db.query(Stock)
+
+    if forward_pe:
+        stocks = stocks.filter(Stock.forward_pe < forward_pe)
+
+    if dividend_yield:
+        stocks = stocks.filter(Stock.dividend_yield > dividend_yield)
+
+    if ma50:
+        stocks = stocks.filter(Stock.price > Stock.ma50)
+
+    if ma200:
+        stocks = stocks.filter(Stock.price > Stock.ma200)
+
+    stocks = stocks.all()
+
     return templates.TemplateResponse(
         "dashboard.html",
         {
             "request": request,
+            "stocks": stocks,
+            "dividend_yield": dividend_yield,
+            "forward_pe": forward_pe,
+            "ma200": ma200,
+            "ma50": ma50,
         },
     )
 
