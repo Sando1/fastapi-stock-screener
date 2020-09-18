@@ -65,3 +65,4 @@ GitHub.sublime-settings
 .history
 
 __pycache__
+*.db
